@@ -58,3 +58,9 @@ services:
       - BPL_JVM_THREAD_COUNT=50
       - BPL_DEBUG_ENABLED=true
       - BPL_DEBUG_PORT=8001
+
+  polar-redis:
+    image: "redis:7.2"
+    container_name: "polar-redis"
+    ports:
+      - 6379:6379
