@@ -69,6 +69,15 @@ services:
       - SPRING_CLOUD_CONFIG_URI=http://config-service:8888
       - SPRING_REDIS_HOST=polar-redis
 
+  polar-ui:
+      image: "ghcr.io/polarbookshop/polar-ui:v1"
+      container_name: "polar-ui"
+      ports:
+        - 9004:9004
+      environment:
+        - PORT=9004
+
+
   polar-postgres:
     image: "postgres:14.10"
     container_name: "polar-postgres"
