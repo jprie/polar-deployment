@@ -1,4 +1,5 @@
 version: "3.8"
+name: polar-bookshop
 services:
 
   catalog-service:
@@ -68,8 +69,10 @@ services:
       - BPL_DEBUG_PORT=8000
       - CATALOG_SERVICE_URL=http://catalog-service:9001
       - ORDER_SERVICE_URL=http://order-service:9002
+      - SPA_URL=http://polar-ui:9004
       - SPRING_CLOUD_CONFIG_URI=http://config-service:8888
-      - SPRING_REDIS_HOST=polar-redis
+      - SPRING_DATA_REDIS_HOST=polar-redis
+      - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI=http://host.docker.internal:8080/realms/PolarBookshop
 
   polar-ui:
       image: "ghcr.io/polarbookshop/polar-ui:v1"
@@ -110,7 +113,7 @@ services:
       - 6379:6379
 
   polar-rabbitmq:
-    image: rabbitmq:3.10-management
+    image: rabbitmq:3.12-management
     container_name: polar-rabbitmq
     ports:
       - 5672:5672
@@ -119,7 +122,7 @@ services:
       - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
 
   polar-keycloak:
-      image: quay.io/keycloak/keycloak:19.0
+      image: quay.io/keycloak/keycloak:23.0
       container_name: "polar-keycloak"
       command: start-dev --import-realm # automatically realm-config.json
       volumes:
