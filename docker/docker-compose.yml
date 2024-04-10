@@ -55,6 +55,7 @@ services:
 
   edge-service:
     depends_on:
+      - config-service
       - polar-redis
       - polar-keycloak
       - polar-ui
