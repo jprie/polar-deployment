@@ -4,6 +4,7 @@ services:
 
   catalog-service:
     depends_on:
+      - fluent-bit
       - polar-postgres
       - config-service
     image: "catalog-service"
@@ -19,6 +20,10 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://polar-postgres:5432/polardb_catalog
       - SPRING_PROFILES_ACTIVE=testdata
       - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=http://host.docker.internal:8080/realms/PolarBookshop
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: 127.0.0.1:24224
 
 
   order-service:
@@ -79,12 +84,12 @@ services:
       - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI=http://host.docker.internal:8080/realms/PolarBookshop
 
   polar-ui:
-      image: "ghcr.io/polarbookshop/polar-ui:v1"
-      container_name: "polar-ui"
-      ports:
-        - 9004:9004
-      environment:
-        - PORT=9004
+    image: "ghcr.io/polarbookshop/polar-ui:v1"
+    container_name: "polar-ui"
+    ports:
+      - 9004:9004
+    environment:
+      - PORT=9004
 
 
   polar-postgres:
@@ -95,7 +100,7 @@ services:
     environment:
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=password
-#      - POSTGRES_DB=polardb_catalog
+    #      - POSTGRES_DB=polardb_catalog
     volumes:
       - ./postgresql/init.sql:/docker-entrypoint-initdb.d/init.sql
 
@@ -126,13 +131,45 @@ services:
       - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
 
   polar-keycloak:
-      image: quay.io/keycloak/keycloak:23.0
-      container_name: "polar-keycloak"
-      command: start-dev --import-realm # automatically realm-config.json
-      volumes:
-        - ./keycloak:/opt/keycloak/data/import
-      environment:
-        - KEYCLOAK_ADMIN=user
-        - KEYCLOAK_ADMIN_PASSWORD=password
-      ports:
-        - 8080:8080
+    image: quay.io/keycloak/keycloak:23.0
+    container_name: "polar-keycloak"
+    command: start-dev --import-realm # automatically realm-config.json
+    volumes:
+      - ./keycloak:/opt/keycloak/data/import
+    environment:
+      - KEYCLOAK_ADMIN=user
+      - KEYCLOAK_ADMIN_PASSWORD=password
+    ports:
+      - 8080:8080
+
+  grafana:
+    image: grafana/grafana-oss:10.2.2
+    container_name: grafana
+    depends_on:
+      - loki
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=user
+      - GF_SECURITY_ADMIN_PASSWORD=password
+    volumes:
+      - ./observability/grafana/datasources:/etc/grafana/provisioning/datasources
+      - ./observability/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./observability/grafana/grafana.ini:/etc/grafana/grafana.ini
+
+  loki:
+    image: grafana/loki:2.9.2
+    container_name: loki
+    depends_on:
+      - fluent-bit
+    ports:
+      - "3100:3100"
+
+  fluent-bit:
+    image: grafana/fluent-bit-plugin-loki:2.9.1
+    ports:
+      - "24224:24224"
+    environment:
+      - LOKI_URL=http://loki:3100/loki/api/v1/push
+    volumes:
+      - ./observability/fluent-bit/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
