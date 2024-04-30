@@ -5,9 +5,9 @@ resources:
 - github.com/jprie/catalog-service/k8s?ref=e5aa341a23689a9806adefa6438cb5aaef7bbd14
 
 patches:
-  - path: patch-env.yml
-  - path: patch-resources.yml
-  - path: patch-volumes.yml
+- path: patch-env.yml
+- path: patch-resources.yml
+- path: patch-volumes.yml
 
 configMapGenerator:
 - behavior: merge
@@ -18,9 +18,8 @@ configMapGenerator:
 images:
 - name: catalog-service
   newName: ghcr.io/jprie/catalog-service
-  newTag: e5aa341a23689a9806adefa6438cb5aaef7bbd14
+  newTag: 15413c637f5612396e480891795a11f1771546e7
 
 replicas:
 - count: 2
   name: catalog-service
-
