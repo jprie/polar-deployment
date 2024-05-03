@@ -18,7 +18,7 @@ configMapGenerator:
 images:
 - name: catalog-service
   newName: ghcr.io/jprie/catalog-service
-  newTag: 15413c637f5612396e480891795a11f1771546e7
+  newTag: 886574ed7d60afdfdc6076cc901756da05db4345
 
 replicas:
 - count: 2
